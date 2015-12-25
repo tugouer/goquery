@@ -73,6 +73,25 @@ func NewDocumentFromResponse(res *http.Response) (*Document, error) {
 	return newDocument(root, res.Request.URL), nil
 }
 
+// 删除 response.Body.Close()，body 需要手动关闭
+func NewDocumentFromKeepAliveResponse(res *http.Response) (*Document, error) {
+	if res == nil {
+		return nil, errors.New("Response is nil")
+	}
+	if res.Request == nil {
+		return nil, errors.New("Response.Request is nil")
+	}
+
+	// Parse the HTML into nodes
+	root, e := html.Parse(res.Body)
+	if e != nil {
+		return nil, e
+	}
+
+	// Create and fill the document
+	return newDocument(root, res.Request.URL), nil
+}
+
 // CloneDocument creates a deep-clone of a document.
 func CloneDocument(doc *Document) *Document {
 	return newDocument(cloneNode(doc.rootNode), doc.Url)
